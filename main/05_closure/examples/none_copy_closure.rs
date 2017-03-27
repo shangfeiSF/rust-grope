@@ -9,24 +9,20 @@ fn main() {
         let closure = |params| (&*base, params);
         let result = closure('d');
 
-        // 虽然closure引用了base的不可变借用，但是String::from("abc")的所有权还是归base所有
+        // 因为没有改变base
         println!("base:{}", base);
         println!("result:{:?}", result);
     }
 
     println!("\n##闭包引用可变借用，不改变");
     {
-        let mut base: String = String::from("abc");
+        let mut base: String = String::from("a");
+        base = String::from(base.clone() + "bc");
 
-        // 保证base被读过and被写过
-        println!("base:{}", base);
-        base = String::from("def");
-
-        // closure引用了base的可变借用
         let closure = |params| (&*base, params);
-        let result = closure('g');
+        let result = closure('d');
 
-        // 虽然closure引用了base的可变借用，但是没有改变base
+        // 因为没有改变base
         println!("base:{}", base);
         println!("result:{:?}", result);
 
@@ -36,17 +32,13 @@ fn main() {
 
     println!("\n##闭包引用可变借用，改变");
     {
-        let mut base: String = String::from("abc");
+        let mut base: String = String::from("a");
+        base = String::from(base.clone() + "bc");
 
-        // 保证base被读过and被写过
-        println!("base:{}", base);
-        base = String::from("def");
-
-        // closure引用了base的可变借用
         let mut closure = |params| base.push(params);
-        let result = closure('g');
+        let result = closure('d');
 
-        // closure引用了base的可变借用，但是改变了base
+        // 因为改变了base
         // println!("base:{}", base);
         println!("result:{:?}", result);
 
@@ -56,22 +48,20 @@ fn main() {
 
     println!("\n##闭包引用可变借用，不改变，释放了闭包中的可变借用");
     {
-        let mut base: String = String::from("abc");
-
-        // 保证base被读过and被写过
-        println!("base:{}", base);
-        base = String::from("def");
+        let mut base: String = String::from("a");
+        base = String::from(base.clone() + "bc");
 
         {
             // 闭包closure所在的作用域
-            // closure引用了base的可变借用
             let closure = |params| (&*base, params);
-            let result = closure('g');
+            let result = closure('d');
 
-            // 虽然closure引用了base的可变借用，但是没有改变base
+            // 因为没有改变base
             println!("base:{}", base);
             println!("result:{:?}", result);
         }
+
+        println!("base:{}", base);
 
         // 虽然closure引用了base的可变借用
         // 但是随着闭包closure离开其作用域，也释放了闭包中base的可变借用
@@ -84,22 +74,20 @@ fn main() {
 
     println!("\n##闭包引用可变借用，改变，释放了闭包中的可变借用");
     {
-        let mut base: String = String::from("abc");
-
-        // 保证base被读过and被写过
-        println!("base:{}", base);
-        base = String::from("def");
-
+        let mut base: String = String::from("a");
+        base = String::from(base.clone() + "bc");
+        
         {
             // 闭包closure所在的作用域
-            // closure引用了base的可变借用
             let mut closure = |params| base.push(params);
-            let result = closure('g');
+            let result = closure('d');
 
-            // closure引用了base的可变借用，但是改变了base
+            // 因为改变了base
             // println!("base:{}", base);
             println!("result:{:?}", result);
         }
+
+        println!("base:{}", base);
 
         // 虽然closure引用了base的可变借用
         // 但是随着闭包closure离开其作用域，也释放了闭包中base的可变借用

@@ -65,6 +65,8 @@ fn main() {
             println!("result:{}", result);
         }
 
+        println!("base:{}", base);
+
         let borrow = &mut base;
         *borrow = 20_u32;
 
@@ -86,6 +88,8 @@ fn main() {
             println!("base:{}", base);
             println!("result:{}", result);
         }
+
+        println!("base:{}", base);
 
         let borrow = &mut base;
         *borrow = 20_u32;

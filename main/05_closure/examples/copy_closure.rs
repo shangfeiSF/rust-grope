@@ -67,6 +67,8 @@ fn main() {
             println!("result:{}", result);
         }
 
+        println!("base:{}", base);
+
         // 虽然closure引用了base的可变借用
         // 但是随着闭包closure离开其作用域，也释放了闭包中base的可变借用
         // 所以borrow可以取得base的可变借用了
@@ -93,6 +95,8 @@ fn main() {
             // println!("base:{}", base);
             println!("result:{}", result);
         }
+
+        println!("base:{}", base);
 
         // 虽然closure引用了base的可变借用
         // 但是随着闭包closure离开其作用域，也释放了闭包中base的可变借用
