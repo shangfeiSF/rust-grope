@@ -3,4 +3,18 @@ name = "05_closure"
 version = "0.1.0"
 authors = ["shangfeiSF <tony20100125@126.com>"]
 
-[dependencies]
+[[example]]
+name = "copy_closure"
+path = "examples/copy_closure.rs"
+
+[[example]]
+name = "copy_closure_move"
+path = "examples/copy_closure_move.rs"
+
+[[example]]
+name = "none_copy_closure"
+path = "examples/none_copy_closure.rs"
+
+[[example]]
+name = "none_copy_closure_move"
+path = "examples/none_copy_closure_move.rs"
