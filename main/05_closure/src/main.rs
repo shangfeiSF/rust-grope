@@ -1,25 +1,27 @@
 fn main() {
     println!("#单行闭包是一个表达式");
     {
-        let plus_one = |params: u32| params + 1u32;
-        let added_one = plus_one(5u32);
+        let base = 5_u32;
 
-        println!("added_one: {}", added_one);
+        let closure = |params: u32| params + base;
+        let result = closure(5_u32);
+
+        println!("base: {}", base);
+        println!("result: {}", result);
     }
 
     println!("#多行闭包使用花括号，通过返回值实现表达式");
     {
-        // 不需要声明闭包参数和返回值的类型
-        let plus_twice = |params| {
-            let mut result: u32 = params;
+        let mut base = 5_u32;
 
-            result += 2_u32;
-            result += 3_u32;
-
-            result
+        let mut closure = |params| {
+            // 不需要声明参数和返回值的类型
+            base += params;
+            base
         };
-        let added_twice = plus_twice(1u32);
+        let result = closure(5_u32);
 
-        println!("added_twice: {}", added_twice);
+        // println!("base: {}", base);
+        println!("result: {}", result);
     }
 }

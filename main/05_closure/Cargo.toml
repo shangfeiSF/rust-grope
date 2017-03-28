@@ -12,9 +12,17 @@ name = "copy_closure_move"
 path = "examples/copy_closure_move.rs"
 
 [[example]]
+name = "compare_copy_closure"
+path = "examples/compare_copy_closure.rs"
+
+[[example]]
 name = "none_copy_closure"
 path = "examples/none_copy_closure.rs"
 
 [[example]]
 name = "none_copy_closure_move"
 path = "examples/none_copy_closure_move.rs"
+
+[[example]]
+name = "compare_none_copy_closure"
+path = "examples/compare_none_copy_closure.rs"
