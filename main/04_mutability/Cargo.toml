@@ -4,9 +4,9 @@ version = "0.1.0"
 authors = ["shangfeiSF <tony20100125@126.com>"]
 
 [[example]]
-name = "advanced_copy_auto"
-path = "examples/advanced_copy_auto.rs"
+name = "0"
+path = "examples/0.advanced_copy_auto.rs"
 
 [[example]]
-name = "advanced_copy"
-path = "examples/advanced_copy.rs"
+name = "1"
+path = "examples/1.advanced_copy.rs"
