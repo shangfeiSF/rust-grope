@@ -1,0 +1,20 @@
+[package]
+name = "07_borrowing"
+version = "0.1.0"
+authors = ["shangfeiSF <tony20100125@126.com>"]
+
+[[example]]
+name = "0"
+path = "examples/0.borrowing.rs"
+
+[[example]]
+name = "1"
+path = "examples/1.mutability_borrowing.rs"
+
+[[example]]
+name = "2"
+path = "examples/2.borrowing_and_mutability_borrowing.rs"
+
+[[example]]
+name = "3"
+path = "examples/3.borrowing_and_mutability_borrowing.rs"
