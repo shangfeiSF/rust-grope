@@ -4,25 +4,25 @@ version = "0.1.0"
 authors = ["shangfeiSF <tony20100125@126.com>"]
 
 [[example]]
-name = "copy_closure"
-path = "examples/copy_closure.rs"
+name = "0"
+path = "examples/0.copy_closure.rs"
 
 [[example]]
-name = "copy_closure_move"
-path = "examples/copy_closure_move.rs"
+name = "1"
+path = "examples/1.copy_closure_move.rs"
 
 [[example]]
-name = "compare_copy_closure"
-path = "examples/compare_copy_closure.rs"
+name = "2"
+path = "examples/2.compare_copy_closure.rs"
 
 [[example]]
-name = "none_copy_closure"
-path = "examples/none_copy_closure.rs"
+name = "3"
+path = "examples/3.none_copy_closure.rs"
 
 [[example]]
-name = "none_copy_closure_move"
-path = "examples/none_copy_closure_move.rs"
+name = "4"
+path = "examples/4.none_copy_closure_move.rs"
 
 [[example]]
-name = "compare_none_copy_closure"
-path = "examples/compare_none_copy_closure.rs"
+name = "5"
+path = "examples/5.compare_none_copy_closure.rs"
