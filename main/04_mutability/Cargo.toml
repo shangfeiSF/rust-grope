@@ -10,7 +10,3 @@ path = "examples/advanced_copy_auto.rs"
 [[example]]
 name = "advanced_copy"
 path = "examples/advanced_copy.rs"
-
-[[example]]
-name = "advanced_move"
-path = "examples/advanced_move.rs"
