@@ -1,7 +1,7 @@
 fn main() {
     println!("# 闭包引用了具有Copy特性的基本类型，如let base = 5_u32");
 
-    println!("\n## 闭包引用<不可变借用>，let borrow = &base;");
+    println!("\n## 闭包引用<不可变借用>， 再let borrow = &base;");
     {
         let base = 5_u32;
 
@@ -21,7 +21,7 @@ fn main() {
         println!("borrow_another:{}", borrow_another);
     }
 
-    println!("\n## 闭包引用<不可变借用>，let borrow = &mut base;");
+    println!("\n## 闭包引用<不可变借用>， 再let borrow = &mut base;");
     {
         let mut base = 0_u32;
         base = base + 5_u32;
@@ -56,13 +56,12 @@ fn main() {
 
         // println!("base:{}", base);
 
-        // 因为closure引用了base的可变借用，所以borrow不能再取得base的可变借用了
         // let borrow = &mut base;
         // *borrow = 20_u32;
         // println!("borrow:{}", borrow);
     }
 
-    println!("\n## 闭包引用<不可变借用>，let borrow = & base;，<释放了闭包>");
+    println!("\n## 闭包引用<不可变借用>，再let borrow = & base;，<释放了闭包>");
     {
         let mut base = 0_u32;
         base = base + 5_u32;
@@ -76,15 +75,13 @@ fn main() {
             println!("base:{}", base);
         }
 
-        // 虽然closure引用了base的可变借用
-        // 但是随着闭包closure离开其作用域，也释放了闭包中base的可变借用
-        // 所以borrow可以取得base的可变借用了
+        // 随着闭包closure离开其作用域，也释放了闭包中base的借用
         let borrow = &mut base;
         *borrow = 20_u32;
         println!("borrow:{}", borrow);
     }
 
-    println!("\n## 闭包引用<可变借用>，let borrow = &mut base;，<释放了闭包>");
+    println!("\n## 闭包引用<可变借用>，再let borrow = &mut base;，<释放了闭包>");
     {
         let mut base = 0_u32;
         base = base + 5_u32;
@@ -101,9 +98,7 @@ fn main() {
             // println!("base:{}", base);
         }
 
-        // 虽然closure引用了base的可变借用
-        // 但是随着闭包closure离开其作用域，也释放了闭包中base的可变借用
-        // 所以borrow可以取得base的可变借用了
+        // 随着闭包closure离开其作用域，也释放了闭包中base的借用
         let borrow = &mut base;
         *borrow = 20_u32;
         println!("borrow:{}", borrow);

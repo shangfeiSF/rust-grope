@@ -1,10 +1,12 @@
 fn main() {
     println!("# <move>闭包引用了具有Copy特性的基本类型，如let base = 5_u32");
 
-    println!("\n## <move>闭包引用<不可变借用>，let borrow = &base;");
+    println!("\n## <move>闭包引用<不可变借用>，再let borrow = &base;");
     {
         let base = 5_u32;
 
+        // closure先copy base
+        // 然后通过move强制获取copyed base的所有权
         let closure = move |params| params + base; // <不可变借用>
         let result = closure(5_u32);
 
@@ -19,7 +21,7 @@ fn main() {
         println!("borrow_another:{}", borrow_another);
     }
 
-    println!("\n## <move>闭包引用<不可变借用>，let borrow = &mut base;");
+    println!("\n## <move>闭包引用<不可变借用>，再let borrow = &mut base;");
     {
         let mut base = 0_u32;
         base = base + 5_u32;
@@ -59,7 +61,7 @@ fn main() {
         println!("borrow:{}", borrow);
     }
 
-    println!("\n## <move>闭包引用<不可变借用>，let borrow = & base;，<释放了闭包>");
+    println!("\n## <move>闭包引用<不可变借用>，再let borrow = & base;，<释放了闭包>");
     {
         let mut base = 0_u32;
         base = base + 5_u32;
@@ -78,7 +80,7 @@ fn main() {
         println!("borrow:{}", borrow);
     }
 
-    println!("\n## <move>闭包引用<可变借用>，let borrow = &mut base;，<释放了闭包>");
+    println!("\n## <move>闭包引用<可变借用>，再let borrow = &mut base;，<释放了闭包>");
     {
         let mut base = 0_u32;
         base = base + 5_u32;
