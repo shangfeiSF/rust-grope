@@ -1,7 +1,7 @@
 fn main() {
     println!("# 引用&borrow");
 
-    println!("\n## 先可变借用一次，再借用一次：let borrow_r = & &mut base;");
+    println!("\n## 先可变借用一次，再借用一次：let borrow = & &mut base;");
     {
         let mut base = 1.1;
 
@@ -10,7 +10,7 @@ fn main() {
         println!("{:?}", borrow);
     }
 
-    println!("\n## 先借用一次，再可变借用一次：let borrow_r = &mut &base;");
+    println!("\n## 先借用一次，再可变借用一次：let borrow = &mut &base;");
     {
         let mut base = 2.1;
 

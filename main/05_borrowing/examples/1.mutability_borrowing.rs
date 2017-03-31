@@ -6,6 +6,7 @@ fn main() {
         let borrow = &mut base;
         *borrow = 10.1;
 
+        // println!("base:{:?}", base);
         println!("borrow:{:?}", borrow);
     }
 
@@ -16,6 +17,7 @@ fn main() {
         let borrow = &mut &mut base;
         **borrow = 20.1;
 
+        // println!("base:{:?}", base);
         println!("borrow:{:?}", borrow);
     }
 
@@ -26,6 +28,7 @@ fn main() {
         let borrow = &mut &mut &mut base;
         ***borrow = 30.1;
 
+        // println!("base:{:?}", base);
         println!("borrow:{:?}", borrow);
     }
 }
