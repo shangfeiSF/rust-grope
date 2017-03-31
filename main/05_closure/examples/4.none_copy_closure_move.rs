@@ -1,7 +1,7 @@
 fn main() {
-    println!("#闭包引用了不具有Copy特性的非基本类型，如let base: String = String::from(\"abc\")");
+    println!("# 闭包引用了不具有Copy特性的非基本类型，如let base: String = String::from(\"abc\")");
 
-    println!("\n## <move>闭包引用<不可变借用>，let borrow = &base;");
+    println!("\n## <move>闭包引用<不可变借用>，再let borrow = &base;");
     {
         let base: String = String::from("abc");
 
@@ -20,7 +20,7 @@ fn main() {
         // println!("borrow_another:{:?}", borrow_another);
     }
 
-    println!("\n## <move>闭包引用<不可变借用>，let borrow = &mut base;");
+    println!("\n## <move>闭包引用<不可变借用>，再let borrow = &mut base;");
     {
         let mut base: String = String::from("a");
         base = String::from(base.clone() + "bc");
@@ -56,7 +56,7 @@ fn main() {
         // println!("borrow:{:?}", borrow);
     }
 
-    println!("\n## <move>闭包引用<不可变借用>，let borrow = & base;，<释放了闭包>");
+    println!("\n## <move>闭包引用<不可变借用>，再let borrow = & base;，<释放了闭包>");
     {
         let mut base: String = String::from("a");
         base = String::from(base.clone() + "bc");
@@ -70,12 +70,13 @@ fn main() {
             // println!("base:{:?}", base);
         }
 
+        // base的所有权已经被闭包closure获取
         // let borrow = &mut base;
         // *borrow = String::from("xyz");
         // println!("borrow:{:?}", borrow);
     }
 
-    println!("\n## <move>闭包引用<可变借用>，let borrow = &mut base;，<释放了闭包>");
+    println!("\n## <move>闭包引用<可变借用>，再let borrow = &mut base;，<释放了闭包>");
     {
         let mut base: String = String::from("a");
         base = String::from(base.clone() + "bc");
@@ -89,6 +90,7 @@ fn main() {
             // println!("base:{:?}", base);
         }
 
+        // base的所有权已经被闭包closure获取
         // let borrow = &mut base;
         // *borrow = String::from("xyz");
         // println!("borrow:{:?}", borrow);

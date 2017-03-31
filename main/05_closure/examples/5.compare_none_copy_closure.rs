@@ -1,7 +1,7 @@
 fn main() {
     println!("#闭包引用了不具有Copy特性的非基本类型，如let base: String = String::from(\"abc\")");
 
-    println!("\n## 闭包引用<不可变借用>，let borrow = &base;");
+    println!("\n## 闭包引用<不可变借用>，再let borrow = &base;");
     println!("******* normal *******");
     {
         let base: String = String::from("abc");
@@ -39,7 +39,7 @@ fn main() {
         // println!("borrow_another:{:?}", borrow_another);
     }
 
-    println!("\n## 闭包引用<不可变借用>，let borrow = &mut base;");
+    println!("\n## 闭包引用<不可变借用>，再let borrow = &mut base;");
     println!("******* normal *******");
     {
         let mut base: String = String::from("a");
@@ -88,7 +88,6 @@ fn main() {
 
         // println!("base:{:?}", base);
 
-        // 因为closure引用了base的可变借用，所以borrow不能再取得base的可变借用了
         // let borrow = &mut base;
         // *borrow = String::from("xyz");
         // println!("borrow:{:?}", borrow);
@@ -112,7 +111,7 @@ fn main() {
         // println!("borrow:{:?}", borrow);
     }
 
-    println!("\n## 闭包引用<不可变借用>，let borrow = & base;，<释放了闭包>");
+    println!("\n## 闭包引用<不可变借用>，再let borrow = & base;，<释放了闭包>");
     println!("******* normal *******");
     {
         let mut base: String = String::from("a");
@@ -127,9 +126,7 @@ fn main() {
             println!("base:{:?}", base);
         }
 
-        // 虽然closure引用了base的可变借用
-        // 但是随着闭包closure离开其作用域，也释放了闭包中base的可变借用
-        // 所以borrow可以取得base的可变借用了
+        // 随着闭包closure离开其作用域，也释放了闭包中base的借用
         let borrow = &mut base;
         *borrow = String::from("xyz");
         println!("borrow:{:?}", borrow);
@@ -148,12 +145,13 @@ fn main() {
             // println!("base:{:?}", base);
         }
 
+        // base的所有权已经被闭包closure获取
         // let borrow = &mut base;
         // *borrow = String::from("xyz");
         // println!("borrow:{:?}", borrow);
     }
 
-    println!("\n## 闭包引用<可变借用>，let borrow = &mut base;，<释放了闭包>");
+    println!("\n## 闭包引用<可变借用>，再let borrow = &mut base;，<释放了闭包>");
     println!("******* normal *******");
     {
         let mut base: String = String::from("a");
@@ -168,9 +166,7 @@ fn main() {
             // println!("base:{:?}", base);
         }
 
-        // 虽然closure引用了base的可变借用
-        // 但是随着闭包closure离开其作用域，也释放了闭包中base的可变借用
-        // 所以borrow可以取得base的可变借用了
+        // 随着闭包closure离开其作用域，也释放了闭包中base的借用
         let borrow = &mut base;
         *borrow = String::from("xyz");
         println!("borrow:{:?}", borrow);
@@ -189,6 +185,7 @@ fn main() {
             // println!("base:{:?}", base);
         }
 
+        // base的所有权已经被闭包closure获取
         // let borrow = &mut base;
         // *borrow = String::from("xyz");
         // println!("borrow:{:?}", borrow);
