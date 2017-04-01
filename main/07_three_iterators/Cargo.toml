@@ -1,0 +1,28 @@
+[package]
+name = "07_three_iterators"
+version = "0.1.0"
+authors = ["shangfeiSF <tony20100125@126.com>"]
+
+[[example]]
+name = "0"
+path = "examples/0.iter.rs"
+
+[[example]]
+name = "1"
+path = "examples/1.iter_mut.rs"
+
+[[example]]
+name = "2"
+path = "examples/2.into_iter.rs"
+
+[[example]]
+name = "3"
+path = "examples/3.for_loop.rs"
+
+[[example]]
+name = "4"
+path = "examples/4.clone_into_iter.rs"
+
+[[example]]
+name = "5"
+path = "examples/5.cloned_take.rs"
