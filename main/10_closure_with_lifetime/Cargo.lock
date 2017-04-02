@@ -1,0 +1,4 @@
+[root]
+name = "10_closure_with_lifetime"
+version = "0.1.0"
+

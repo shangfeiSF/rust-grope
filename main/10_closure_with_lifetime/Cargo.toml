@@ -1,0 +1,6 @@
+[package]
+name = "10_closure_with_lifetime"
+version = "0.1.0"
+authors = ["shangfeiSF <tony20100125@126.com>"]
+
+[dependencies]
