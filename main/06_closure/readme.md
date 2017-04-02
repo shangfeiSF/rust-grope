@@ -1,33 +1,33 @@
 # Finding Closure in Rust
 
 ## Contents
-----
 
 * What’s a closure?
 * Back to basics
 * How do real closures work?
-  * Structs and captures
-  * move and escape
-  * Traits
+     * Structs and captures
+    * move and escape
+     * Traits
 * Flexibility
 * In closing
-* Annotation
 
-Have you ever used an [iterator adapter](https://doc.rust-lang.org/std/iter/trait.Iterator.html) in Rust? 
-Called a method on[Option](https://doc.rust-lang.org/std/option/enum.Option.html)? 
-[Spawned](https://doc.rust-lang.org/std/thread/fn.spawn.html) a thread? 
+Have you ever used an [iterator adapter](https://doc.rust-lang.org/std/iter/trait.Iterator.html) in Rust? Or called a method on [Option](https://doc.rust-lang.org/std/option/enum.Option.html)? Or [spawned](https://doc.rust-lang.org/std/thread/fn.spawn.html) a thread?
+
 You’ve almost certainly used a [closure](https://en.wikipedia.org/wiki/Closure_%28computer_programming%29). The design in Rust may seem a little complicated, but it slides right into Rust’s normal ownership model so let’s reinvent it from scratch.
 
-The new design was introduced in RFC 114, moving Rust to a model for closures similar to **C++11**’s. The design builds on Rust’s standard trait system to allow for allocation-less statically-dispatched closures, but also giving the choice to opt-in to type-erasure and dynamic dispatch and the benefits that brings. It incorporates elements of inference that “just work” by ensuring that ownership works out.
+The new design was introduced in [RFC 114](https://github.com/rust-lang/rfcs/blob/master/text/0114-closures.md), moving Rust to a model for closures similar to **C++11**’s. The design builds on Rust’s standard trait system to allow for allocation-less statically-dispatched closures, but also giving the choice to opt-in to type-erasure and dynamic dispatch and the benefits that brings. It incorporates elements of inference that “just work” by ensuring that ownership works out.
 
 > Steve Klabnik has written [some docs on Rust’s closures](https://doc.rust-lang.org/book/closures.html) for the official documentation. I’ve explicitly avoided reading it so far because I’ve always wanted to write this, and I think it’s better to give a totally independent explanation while I have the chance. If something is confusing here, maybe they help clarify.
 
 ## What’s a closure?
-----
 
-In a sentence: a closure is a function that can directly use variables from the scope in which it is defined. This is often described as the closure closing over or capturing variables (the captures). Collectively, the variables are called the environment.
+In a sentence: **a closure is a function that can directly use variables from the scope in which it is defined**.
 
-Syntactically, a closure in Rust is an anonymous function[#0] value defined a little like Ruby, with pipes: `|arguments...| body`. For example, `|a, b| a + b` defines a closure that takes two arguments and returns their sum. It’s just like a normal function declaration, with more inference:
+This is often described as the closure **closing over** or **capturing** variables (the captures). Collectively, the variables are called the environment.
+
+Syntactically, a closure in Rust is an anonymous function value defined a little like Ruby, with pipes: `|arguments...| body`. For example, `|a, b| a + b` defines a closure that takes two arguments and returns their sum. It’s just like a normal function declaration, with more inference:
+
+> The Rust `|...| ...` syntax is more than just a closure: it’s an anonymous function. In general, it’s possible to have things that are closures but aren’t anonymous (e.g. in Python, functions declared with `def foo():` are closures too, they can refer to variables in any scopes in which the `def foo` is contained). The anonymity refers to the fact that the closure expression is a value, it’s possible to just use it directly and there’s no separate `fn foo() { ... }` with the function value referred to via `foo`.
 
 ```
 // function:
@@ -60,7 +60,7 @@ fn main() {
 ```
 Run code on [Rust Playground](https://play.rust-lang.org/).
 
-The closures are capturing the `three` and `ten` variables, allowing them to be used while mapping. 
+The closures are capturing the `x` and `y` variables, allowing them to be used while mapping.
 
 > To be more convincing, imagine they were only known at runtime, so that one couldn’t just write val + 3 inside the closure.
 
@@ -80,7 +80,9 @@ fn map<X, Y>(option: Option<X>, transformer: ...) -> Option<Y> {
 }
 ```
 
-We need to fill in the `...` with something that transforms an `X` into a `Y`. The biggest constraint for perfectly replacing `Option::map` is that it needs to be generic in some way, so that it works with absolutely any way we wish to do the transformation. In Rust, that calls for a generic bounded by a trait.
+We need to fill in the `...` with something that transforms an `X` into a `Y`. The biggest constraint for perfectly replacing `Option::map` is that it needs to be generic in some way, so that it works with absolutely any way we wish to do the transformation.
+
+In Rust, that calls for a generic bounded by a trait:
 
 ```
 fn map<X, Y, T>(option: Option<X>, transform: T) -> Option<Y>
@@ -90,7 +92,9 @@ fn map<X, Y, T>(option: Option<X>, transform: T) -> Option<Y>
 
 This trait needs to have a method that converts some specific type into another. Hence there’ll have to be form of type parameters to allow the exact types to be specified in generic bounds like `map`. There’s two choices: generics in the trait definition (“input type parameters”) and associated types (“output type parameters”). 
 
-The quoted names hint at the choices we should take: the type that gets input into the transformation should be a generic in the trait, and the type that is output by the transformation should be an associated type[#1]
+The quoted names hint at the choices we should take: the type that gets input into the transformation should be a generic in the trait, and the type that is output by the transformation should be an associated type.
+
+> This choice is saying that transformers can be overloaded by the starting type, but the ending type is entirely determined by the pair of the transform and the starting type. Using an associated type for the return value is more restrictive (no overloading on return type only) but it gives the compiler a much easier time when inferring types. Using an associated type for the input value too would be too restrictive: it is very useful for the output type to depend on the input type, e.g. a transformation `&'a [i32]` to `&'a i32` (by e.g. indexing) has the two types connected via the generic lifetime `'a`.
 
 So, our trait looks something like:
 
@@ -102,15 +106,25 @@ trait Transform<Input> {
 }
 ```
 
-The last question is what sort of `self` (if any) the method should take?
+The last question is **what sort of `self` (if any) the method should take**?
 
-The transformation should be able to incorporate arbitrary information beyond what is contained in `Input`. Without any `self` argument, the method would look like `fn transform(input: Input) -> Self::Output` and the operation could only depend on `Input` and global variables (ick). 
+* Question first: Do we need any `self` argument?
 
-So we do need one.
+> Explain: The transformation should be able to incorporate arbitrary information beyond what is contained in `Input`. Without any `self` argument, the method would look like `fn transform(input: Input) -> Self::Output` and the operation could only depend on `Input` and global variables (ick).
 
-The most obvious options are by-reference `&self`, by-mutable-reference `&mut self`, or by-value `self`. 
+* Answer first: So we do need one `self` argument.
 
-We want to allow the users of `map` to have as much power as possible while still enabling `map` to type-check. At a high-level `self` gives implementers (i.e. the types users define to implement the trait) the most flexibility, with `&mut self` next and `&self` the least flexible. Conversely, &self gives consumers of the trait (i.e. functions with generics bounded by the trait) the most flexibility, and self the least.
+The most obvious choices are
+
+* by-reference `&self`
+* by-mutable-reference `&mut self`
+* by-value `self`.
+
+We want to allow the users of `map` to have as much power as possible while still enabling `map` to type-check.
+
+At a high-level `self` gives implementers (i.e. the types users define to implement the trait) the most flexibility, with `&mut self` next and `&self` the least flexible.
+
+Conversely, `&self` gives consumers of the trait (i.e. functions with generics bounded by the trait) the most flexibility, and `self` the least.
  
 |  | Implementer | Consumer |
 | -------- | -------- | -------- |
@@ -144,6 +158,8 @@ fn map<X, Y, T>(option: Option<X>, transform: T) -> Option<Y>
 ```
 
 The example from before can then be reimplemented rather verbosely, by creating structs and implementing Transform to do the appropriate conversion for that struct.
+
+Run code below on [Rust Playground](https://play.rust-lang.org/).
 
 ```
 trait Transform<Input> {
@@ -205,9 +221,8 @@ fn main() {
 We’ve manually implemented something that seems to have the same semantics as Rust closures, using traits and some structs to store and manipulate the captures. In fact, the struct has some uncanny similarities to the “environment” of a closure: it stores a pile of variables that need to be used in the body of `transform`.
 
 ## How do real closures work?
-----
 
-Just like that, plus a little more flexibility and syntactic sugar. The real definition of `Option::map` is:
+Just like that, plus a little more flexibility and **syntactic sugar**. The real definition of `Option::map` is:
 
 ```
 impl<X> Option<X> {
@@ -220,7 +235,7 @@ impl<X> Option<X> {
 }
 ```
 
-> `FnOnce(X) -> Y` is another name for our `Transform<X, Output = Y>` bound, and, `f(x)` for `transform.transform(x)`.
+> `FnOnce(X) -> Y` is the **syntactic sugar** for our `Transform<X, Output = Y>` bound, and `f(x)` for `transform.transform(x)`.
 
 There are three traits for closures, all of which provide the `...(...)` call syntax (one could regard them as different kinds of `operator()` in C++). 
 
@@ -242,16 +257,23 @@ There’s two questions left:
 
 * Which trait is used? (what type of `self` is used?)
 
-The compiler answers both by using some local rules to choose the version that will give the most flexibility. The local rules are designed to be able to be checked only knowing the definition the closure, and the types of any variables it captures[#2]
+The compiler answers both by using some local rules to choose the version that will give the most flexibility. The local rules are designed to be able to be checked only knowing the definition the closure, and the types of any variables it captures.
 
-By “flexibility” I mean the compiler chooses the option that (it thinks) will compile, but imposes the least on the programmer.
+> This statement isn’t precisely true in practice, e.g. rustc will emit different errors if closures are misused in certain equivalent-but-non-identical ways. However, I believe these are just improved diagnostics, not a fundamental language thing… however, I’m not sure.
+
+By“flexibility”I mean the compiler chooses the option that (it thinks) will compile, but imposes the least on the programmer.
 
 ## Structs and captures
-----
 
-If you’re familiar with closures in **C++11**, you may recall the `[=]` and `[&]` capture lists: capture variables **by-value[#3]** and **by-reference** respectively. 
+If you’re familiar with closures in **C++11**, you may recall the `[=]` and `[&]` capture lists: ca****pture variables **by-value** and **by-reference** respectively.
 
-Rust has similar capability: variables can be captured **by-value**, that means the variable is moved into the closure environment, or **by-reference**, that meansa reference to the variable is stored in the closure environment.
+> “By-value” in C++, including [=], is really “by-copy” (with some copy-elision rules to sometimes elide copies in certain cases), whereas in Rust it is always “by-move”, more similar to rvalue references in C++.
+
+Rust has similar capability:
+
+* variables can be captured **by-value**, that means the variable is **moved** into the closure environment
+
+*  captured **by-reference**, that means a reference to the variable is **stored** in the closure environment.
 
 By default, the compiler looks at the closure body to see how captured variables are used, and uses that to infers how variables should be captured:
 
@@ -322,13 +344,16 @@ let closure = Environment {
 The struct desugaring allows the full power of Rust’s type system is brought to bear on ensuring it isn’t possible to accidentally get a dangling reference or use freed memory or trigger any other memory safety violation by misusing a closure. If there is problematic code, the compiler will point it out.
 
 ## move and escape
-----
 
 I stated above that the inference is perfect for non-escaping closures… which implies that it is not perfect for “escaping” ones.
 
 If a closure is escaping, that is, if it might leave the stack frame where it is created, it must not contain any references to values inside that stack frame, since those references would be dangling when the closure is used outside that frame: very bad. 
 
-Fortunately the compiler will emit an error if there’s a risk of that, but returning closures can be useful and so should be possible; for example[#4]:
+Fortunately the compiler will emit an error if there’s a risk of that, but returning closures can be useful and so should be possible.
+
+> Since closure types are unique and unnameable, the only way to return one is via a trait object, at least until Rust gets something like the “abstract return types” of RFC 105, something much desired for handling closures. This is a little like an interface-checked version of **C++11**’s decltype(auto), which, I believe, was also partly motivated by closures with unnameable types.
+
+For example:
 
 ```
 // Try to use `make_adder` to return a closure that will add `x` to its argument.
@@ -344,7 +369,7 @@ fn main() {
 }
 ```
 
-Looks good, except… it doesn’t actually compile:
+Looks very good, except… it doesn’t actually compile:
 
 ```
 ...:3:14: 3:23 error: closure may outlive the current function, but it borrows `x`, which is owned by the current function [E0373]
@@ -371,14 +396,19 @@ fn make_adder(x: i32) -> Box<Fn(i32) -> i32> {
 
 `x` goes out of scope at the end of `make_adder` so it is illegal to return something that holds a reference to it.
 
-So how do we fix it? Wouldn’t it be nice if the compiler could tell us…
-Well, actually, I omitted the last two lines of the error message above:
+* Question: So how do we fix it?
+
+> Wouldn’t it be nice if the compiler could tell us how to fix.
+
+* Answer: Well, actually, I omitted the last two lines of the error message:
 
 ```
 ...:3:14: 3:23 help: to force the closure to take ownership of `x` (and any other referenced variables), use the `move` keyword, as shown:
 ...:      Box::new(move |y| x + y)
 ```
-A new keyword! The `move` keyword can be placed in front of a closure declaration, and **overrides the inference to capture all variables by value**. 
+### A new keyword!
+
+The `move` keyword can be placed in front of a closure declaration, and **overrides the inference to capture all variables by value**.
 
 Going back to the previous section, if the code used ``let closure = move || { /* same code */ }`` the environment struct would look like:
 
@@ -442,7 +472,6 @@ It is clear that the compiler doesn’t infer when `move` is required (or else w
 Unfortunately, doing so in general in a reliable way (a `help` message can be heuristic/best-effort, but inference built into the language cannot be), would require more than just an analysis of the internals of the closure body: it would require more complicated machinery to look at how/where the closure value is used.
 
 ## Traits
-----
 
 The actual “function” bit of closures are handled by the traits mentioned above. The implicit struct types will also have implicit implementations of some of those traits, exactly those traits that will actually work for the type.
 
@@ -458,15 +487,44 @@ impl Fn(i32) -> i32 for Closure {
 }
 ```
 
-In reality, there are also implicit implementations[#5] of `FnMut` and `FnOnce` for `Closure`, but `Fn` is the **“fundamental”** one for this closure.
+In reality, there are also implicit implementations of `FnMut` and `FnOnce` for `Closure`, but `Fn` is the **“fundamental”** one for this closure.
 
-There’s three traits, and so **seven** non-empty sets of traits that could[#6] possibly be implemented… but there’s actually only **three** interesting configurations:
+> I wrote an invalid Fn implementation because the real version is ugly and much less clear, and doesn’t work with stable compilers at the moment. But since you asked, here is what’s required:
+
+```
+  #![feature(unboxed_closures, core)]
+
+  impl Fn<(i32,)> for Closure {
+      extern "rust-call" fn call(&self, (y,): (i32,)) -> i32 {
+          self.x + y
+      }
+  }
+
+  impl FnMut<(i32,)> for Closure {
+      extern "rust-call" fn call_mut(&mut self, args: (i32,)) -> i32 {
+          self.call(args)
+      }
+  }
+
+  impl FnOnce<(i32,)> for Closure {
+      type Output = i32;
+      extern "rust-call" fn call_once(self, args: (i32,)) -> i32 {
+          self.call(args)
+      }
+  }
+```
+
+> Just looking at that, one might be able to guess at a few of the reasons that manual implementations of the function traits aren’t stabilised for general use. The only way to create types implementing those traits with the 1.0 compiler is with a closure expression.
+
+There’s three traits, and so **seven** non-empty sets of traits that could possibly be implemented… but there’s actually only **three** interesting configurations:
 
 * `Fn`, `FnMut` and `FnOnce`
 
 * `FnMut` and `FnOnce`
 
 * only `FnOnce`.
+
+> I’m ignoring the inheritance, which means that certain sets are actually statically illegal, i.e., without other constraints there are seven possibilities.
 
 Why? Well, the **three** closure traits are actually three nested sets: 
 
@@ -515,9 +573,10 @@ It is illegal to mutate via a `& &mut ...`, and `&self` is creating that outer s
 Similarly, if closure was to be `|| drop(v);`, that is, move out of `v`, it would be illegal to implement either `Fn` or `FnMut`, since the `&self` (respectively `&mut self`) means that the method would be trying to steal ownership out of borrowed data: criminal.
 
 ## Flexibility
-----
 
-One of Rust’s goals is to leave choice in the hands of the programmer, allowing their code to be efficient, with abstractions compiling away and just leaving fast machine code. The design of closures to use unique struct types and traits/generics is key to this.
+One of Rust’s goals is to leave choice in the hands of the programmer, allowing their code to be efficient, with abstractions compiling away and just leaving fast machine code.
+
+The design of closures to use unique struct types and traits/generics is key to this.
 
 Since each closure has its own type, there’s no compulsory need for heap allocation when using closures: as demonstrated above, the captures can just be placed directly into the struct value. This is a property Rust shares with **C++11**, allowing closures to be used in essentially any environment, including bare-metal environments.
 
@@ -594,54 +653,15 @@ In fact, there are implementations of the `Fn*` traits for pointers, so one can 
 
 So users of higher-order functions can choose which trade-off they want themselves.
 
-All of this flexibility falls directly out of using traits[#7] for closures, and the separate parts are independent and very compositional.
+All of this flexibility falls directly out of using traits for closures, and the separate parts are independent and very compositional.
+
+> C++ has a similar choice, with `std::function` able to provide type erasure/dynamic dispatch for closure types, although it requires separate definition as a library type, and requires allocations. The Rust trait objects are a simple building block in the language, and don’t require allocations (e.g. `&Fn()` is a trait object that can be created out of a pointer to the stack).
+
 
 The power closures offer allow one to build high-level, “fluent” APIs without losing performance compared to writing out the details by hand. The prime example of this is [iterators](https://doc.rust-lang.org/stable/std/iter/): one can write long chains of calls to adapters like `map` and `filter` which get optimised down to efficient C-like code. 
 
 (\For example, I wrote a post that demonstrates this, and the situation has only improved since then: the closure design described here was implemented months later.
 
 ## In closing
-----
 
 Rust’s **C++11**-inspired closures are powerful tools that allow for high-level and efficient code to be build, marrying two properties often in contention. The moving parts of Rust’s closures are built directly from the normal type system with traits, structs and generics, which allows them to automatically gain features like heap allocation and dynamic dispatch, but doesn’t require them.
-
-## Annotation
-----
-
-1. The Rust `|...| ...` syntax is more than just a closure: it’s an anonymous function. In general, it’s possible to have things that are closures but aren’t anonymous (e.g. in Python, functions declared with `def foo():` are closures too, they can refer to variables in any scopes in which the `def foo` is contained). The anonymity refers to the fact that the closure expression is a value, it’s possible to just use it directly and there’s no separate `fn foo() { ... }` with the function value referred to via `foo`. 
-
-2. This choice is saying that transformers can be overloaded by the starting type, but the ending type is entirely determined by the pair of the transform and the starting type. Using an associated type for the return value is more restrictive (no overloading on return type only) but it gives the compiler a much easier time when inferring types. Using an associated type for the input value too would be too restrictive: it is very useful for the output type to depend on the input type, e.g. a transformation &'a [i32] to &'a i32 (by e.g. indexing) has the two types connected via the generic lifetime 'a. 
-
-3. This statement isn’t precisely true in practice, e.g. rustc will emit different errors if closures are misused in certain equivalent-but-non-identical ways. However, I believe these are just improved diagnostics, not a fundamental language thing… however, I’m not sure. 
-
-4. “By-value” in C++, including [=], is really “by-copy” (with some copy-elision rules to sometimes elide copies in certain cases), whereas in Rust it is always “by-move”, more similar to rvalue references in C++. 
-
-5. Since closure types are unique and unnameable, the only way to return one is via a trait object, at least until Rust gets something like the “abstract return types” of RFC 105, something much desired for handling closures. This is a little like an interface-checked version of **C++11**’s decltype(auto), which, I believe, was also partly motivated by closures with unnameable types. 
-I wrote an invalid Fn implementation because the real version is ugly and much less clear, and doesn’t work with stable compilers at the moment. But since you asked, here is what’s required:
-
-    ```
-    #![feature(unboxed_closures, core)]
-
-    impl Fn<(i32,)> for Closure {
-        extern "rust-call" fn call(&self, (y,): (i32,)) -> i32 {
-            self.x + y
-        }
-    }
-    impl FnMut<(i32,)> for Closure {
-        extern "rust-call" fn call_mut(&mut self, args: (i32,)) -> i32 {
-            self.call(args)
-        }
-    }
-    impl FnOnce<(i32,)> for Closure {
-        type Output = i32;
-        extern "rust-call" fn call_once(self, args: (i32,)) -> i32 {
-            self.call(args)
-        }
-    }
-    ```
-
-    Just looking at that, one might be able to guess at a few of the reasons that manual implementations of the function traits aren’t stabilised for general use. The only way to create types implementing those traits with the 1.0 compiler is with a closure expression. 
-
-6. I’m ignoring the inheritance, which means that certain sets are actually statically illegal, i.e., without other constraints there are seven possibilities. 
-
-7. C++ has a similar choice, with std::function able to provide type erasure/dynamic dispatch for closure types, although it requires separate definition as a library type, and requires allocations. The Rust trait objects are a simple building block in the language, and don’t require allocations (e.g. &Fn() is a trait object that can be created out of a pointer to the stack). 
