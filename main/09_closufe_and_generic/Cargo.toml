@@ -1,0 +1,16 @@
+[package]
+name = "09_closufe_and_generic"
+version = "0.1.0"
+authors = ["shangfeiSF <tony20100125@126.com>"]
+
+[[example]]
+name = "0"
+path = "examples/0.pass_closure_as_params.rs"
+
+[[example]]
+name = "1"
+path = "examples/1.return_closure.rs"
+
+[[example]]
+name = "2"
+path = "examples/2.use_FnBox.rs"
