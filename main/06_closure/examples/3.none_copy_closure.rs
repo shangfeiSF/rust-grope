@@ -1,98 +1,141 @@
 fn main() {
-    println!("# 闭包引用了不具有Copy特性的非基本类型，如let base: String = String::from(\"abc\")");
-
-    println!("\n## 闭包引用<不可变借用>，再let borrow = &base;");
+    println!("\n## let base: String = String::from(\"abc\"); 闭包实现: Fn trait, 匿名结构体捕获: &base");
     {
         let base: String = String::from("abc");
 
-        // closure引用了base的不可变借用
-        let closure = |params| (&base, params); // <不可变借用>
-        let result = closure('d');
+        // 闭包实现: Fn trait, 匿名结构体捕获: &base
+        let closure = move |params| {
+            (&base, params);
+            params
+        };
+        let call_closure_1 = closure('d');
+        let call_closure_2 = closure('e');
 
-        println!("result:{:?}", result);
+        println!("call_closure_1 = {:?}", call_closure_1);
+        println!("call_closure_2 = {:?}", call_closure_2);
 
-        println!("base:{:?}", base);
+        println!("base = {:?}", base);
+        let borrow_read_1 = &base;
+        println!("borrow_read_1 = {:?}", borrow_read_1);
+        let borrow_read_2 = &base;
+        println!("borrow_read_2 = {:?}", borrow_read_2);
 
-        let borrow = &base;
-        println!("borrow:{:?}", borrow);
-
-        let borrow_another = &base;
-        println!("borrow_another:{:?}", borrow_another);
+        // let borrow_write = &mut base;
+        // *borrow_write = String::from("xyz");
+        // println!("borrow_write = {:?}", borrow_write);
     }
 
-    println!("\n## 闭包引用<不可变借用>，再let borrow = &mut base;");
+    println!("\n## let mut base: String = String::from(\"abc\"); 闭包实现: Fn trait, 匿名结构体捕获: &base");
     {
-        let mut base: String = String::from("a");
-        base = String::from(base.clone() + "bc");
+        let mut base: String = String::from("abc");
 
-        let closure = |params| (&base, params); // <不可变借用>
-        let result = closure('d');
+        // 闭包实现: Fn trait, 匿名结构体捕获: &base
+        let closure = move |params| {
+            (&base, params);
+            params
+        };
+        let call_closure_1 = closure('d');
+        let call_closure_2 = closure('e');
 
-        println!("result:{:?}", result);
+        println!("call_closure_1 = {:?}", call_closure_1);
+        println!("call_closure_2 = {:?}", call_closure_2);
 
-        println!("base:{:?}", base);
+        println!("base = {:?}", base);
+        let borrow_read_1 = &base;
+        println!("borrow_read_1 = {:?}", borrow_read_1);
+        let borrow_read_2 = &base;
+        println!("borrow_read_2 = {:?}", borrow_read_2);
 
-        // let borrow = &mut base;
-        // *borrow = String::from("xyz");
-        // println!("borrow:{:?}", borrow);
+        // let borrow_write = &mut base;
+        // *borrow_write = String::from("xyz");
+        // println!("borrow_write = {:?}", borrow_write);
     }
 
-    println!("\n## 闭包引用<可变借用>");
+    println!("\n## let mut base: String = String::from(\"abc\"); 闭包实现: Fn trait，匿名结构体捕获: &base，但是释放了闭包作用域，之后“读or写”");
     {
-        let mut base: String = String::from("a");
-        base = String::from(base.clone() + "bc");
-
-        // A `mut` is required on `closure` because a `&mut` is stored inside.
-        // Thus, calling the closure mutates the closure which requires a `mut`.
-        let mut closure = |params| base.push(params); // <可变借用>
-        let result = closure('d');
-
-        println!("result:{:?}", result);
-
-        // println!("base:{:?}", base);
-
-        // let borrow = &mut base;
-        // *borrow = String::from("xyz");
-        // println!("borrow:{:?}", borrow);
-    }
-
-    println!("\n## 闭包引用<不可变借用>，再let borrow = & base;，<释放了闭包>");
-    {
-        let mut base: String = String::from("a");
-        base = String::from(base.clone() + "bc");
+        let mut base: String = String::from("abc");
 
         {
-            let closure = |params| (&base, params);
-            let result = closure('d');
+            // 闭包实现: Fn trait, 匿名结构体捕获: &base
+            let closure = move |params| {
+                (&base, params);
+                params
+            };
+            let call_closure_1 = closure('d');
+            let call_closure_2 = closure('e');
 
-            println!("result:{:?}", result);
+            println!("call_closure_1 = {:?}", call_closure_1);
+            println!("call_closure_2 = {:?}", call_closure_2);
 
-            println!("base:{:?}", base);
+            println!("base = {:?}", base);
+            let borrow_read_1 = &base;
+            println!("borrow_read_1 = {:?}", borrow_read_1);
+            let borrow_read_2 = &base;
+            println!("borrow_read_2 = {:?}", borrow_read_2);
         }
 
-        // 随着闭包closure离开其作用域，也释放了闭包中base的借用
-        let borrow = &mut base;
-        *borrow = String::from("xyz");
-        println!("borrow:{:?}", borrow);
+        // 随着闭包closure离开其作用域，也释放了闭包中base的借用，不影响之后的“写”
+        let borrow_write = &mut base;
+        *borrow_write = String::from("xyz");
+        println!("borrow_write = {:?}", borrow_write);
     }
 
-    println!("\n## 闭包引用<可变借用>，再let borrow = &mut base;，<释放了闭包>");
+    println!("\n## let mut base: String = String::from(\"abc\"); 闭包实现: FnMut trait, 匿名结构体捕获: &mut base");
     {
-        let mut base: String = String::from("a");
-        base = String::from(base.clone() + "bc");
+        let mut base: String = String::from("abc");
+
+        // 闭包实现: FnMut trait, 匿名结构体捕获: &mut base
+        let mut closure = move |params| {
+            base.push(params);
+            params
+        };
+        let call_closure_1 = closure('d');
+        let call_closure_2 = closure('e');
+
+        println!("call_closure_1 = {:?}", call_closure_1);
+        println!("call_closure_2 = {:?}", call_closure_2);
+
+        // println!("base = {:?}", base);
+        // let borrow_read_1 = &base;
+        // println!("borrow_read_1 = {:?}", borrow_read_1);
+        // let borrow_read_2 = &base;
+        // println!("borrow_read_2 = {:?}", borrow_read_2);
+
+        // let borrow_write = &mut base;
+        // *borrow_write = String::from("xyz");
+        // println!("borrow_write = {:?}", borrow_write);
+    }
+
+    println!("\n## let mut base: String = String::from(\"abc\"); 闭包实现: FnMut trait，匿名结构体捕获: &mut base，但是释放了闭包作用域，之后“读or写”");
+    {
+        let mut base: String = String::from("abc");
 
         {
-            let mut closure = |params| base.push(params); // <可变借用>
-            let result = closure('d');
+            // 闭包实现: FnMut trait, 匿名结构体捕获: &mut base
+            let mut closure = move |params| {
+                base.push(params);
+                params
+            };
+            let call_closure_1 = closure('d');
+            let call_closure_2 = closure('e');
 
-            println!("result:{:?}", result);
+            println!("call_closure_1 = {:?}", call_closure_1);
+            println!("call_closure_2 = {:?}", call_closure_2);
 
-            // println!("base:{:?}", base);
+            // println!("base = {}", base);
+            // let borrow_read_1 = &base;
+            // println!("borrow_read_1 = {}", borrow_read_1);
+            // let borrow_read_2 = &base;
+            // println!("borrow_read_2 = {}", borrow_read_2);
+
+            // let borrow_write = &mut base;
+            // *borrow_write = String::from("xyz");
+            // println!("borrow_write = {:?}", borrow_write);
         }
 
-        // 随着闭包closure离开其作用域，也释放了闭包中base的借用
-        let borrow = &mut base;
-        *borrow = String::from("xyz");
-        println!("borrow:{:?}", borrow);
+        // 随着闭包closure离开其作用域，也释放了闭包中base的借用，不影响之后的“写”
+        let borrow_write = &mut base;
+        *borrow_write = String::from("xyz");
+        println!("borrow_write = {:?}", borrow_write);
     }
 }
