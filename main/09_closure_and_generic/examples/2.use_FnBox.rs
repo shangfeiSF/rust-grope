@@ -16,10 +16,29 @@ fn test_fn_box() -> Box<FnBox(i32) -> i32> {
     Box::new(c)
 }
 
+fn test_fn() -> Box<Fn(i32) -> i32> {
+    let c = |num: i32| num * 3;
+    Box::new(c)
+}
+
 fn main() {
     {
         let closure_fn_box = test_fn_box();
-        let result = closure_fn_box(2);
-        println!("result = {}", result);
+
+        let result_1 = closure_fn_box(10);
+        println!("result_1 = {}", result_1);
+
+        let result_2 = closure_fn_box(100);
+        println!("result_2 = {}", result_1);
+    }
+
+    {
+        let closure_fn = test_fn();
+
+        let result_1 = closure_fn(10);
+        println!("result_1 = {}", result_1);
+
+        let result_2 = closure_fn(100);
+        println!("result_2 = {}", result_2);
     }
 }
