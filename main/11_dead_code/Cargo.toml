@@ -1,0 +1,12 @@
+[package]
+name = "11_dead_code"
+version = "0.1.0"
+authors = ["shangfeiSF <tony20100125@126.com>"]
+
+[[example]]
+name = "0"
+path = "examples/0.add_allow.rs"
+
+[[example]]
+name = "1"
+path = "examples/1.add_allow_top.rs"
