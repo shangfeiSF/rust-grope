@@ -1,0 +1,12 @@
+[package]
+name = "12_Box"
+version = "0.1.0"
+authors = ["shangfeiSF <tony20100125@126.com>"]
+
+[[example]]
+name = "0"
+path = "examples/0.stack_and_heap.rs"
+
+[[example]]
+name = "1"
+path = "examples/1.Box.rs"
