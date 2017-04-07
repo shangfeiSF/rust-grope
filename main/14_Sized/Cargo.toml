@@ -1,0 +1,20 @@
+[package]
+name = "14_Sized"
+version = "0.1.0"
+authors = ["shangfeiSF <tony20100125@126.com>"]
+
+[[example]]
+name = "0"
+path = "examples/0.array.rs"
+
+[[example]]
+name = "1"
+path = "examples/1.dynamic_sized_type.rs"
+
+[[example]]
+name = "2"
+path = "examples/2.zero_sized_type.rs"
+
+[[example]]
+name = "3"
+path = "examples/3.transmute.rs"
