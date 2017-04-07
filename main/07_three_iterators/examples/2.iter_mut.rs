@@ -5,16 +5,14 @@
 fn main() {
     println!("# 使用`.iter_mut().map()`遍历迭代器中的每一元素的可变引用");
     {
-        let mut teams = [
-            [("Jack", 20), ("Jane", 23), ("Jill", 18), ("John", 19)],
-            [("Bill", 17), ("Brenda", 16), ("Brad", 18), ("Barbara", 17)]
-        ];
+        let mut teams = [[("Jack", 20), ("Jane", 23), ("Jill", 18), ("John", 19)],
+                         [("Bill", 17), ("Brenda", 16), ("Brad", 18), ("Barbara", 17)]];
 
         let teams_ordered_by_score = teams.iter_mut()
             .map(|team| {
-                team.sort_by(|&a, &b| a.1.cmp(&b.1).reverse());
-                team
-            })
+                     team.sort_by(|&a, &b| a.1.cmp(&b.1).reverse());
+                     team
+                 })
             .collect::<Vec<_>>();
 
         // mutable borrow occurs at `teams.iter_mut()`
@@ -26,10 +24,8 @@ fn main() {
 
     println!("\n## 没有索引");
     {
-        let mut teams = [
-            [("Jack", 20), ("Jane", 23), ("Jill", 18), ("John", 19)],
-            [("Bill", 17), ("Brenda", 16), ("Brad", 18), ("Barbara", 17)]
-        ];
+        let mut teams = [[("Jack", 20), ("Jane", 23), ("Jill", 18), ("John", 19)],
+                         [("Bill", 17), ("Brenda", 16), ("Brad", 18), ("Barbara", 17)]];
         println!("Before teams = {:?}", teams);
 
         for team in teams.iter_mut() {
@@ -42,10 +38,8 @@ fn main() {
 
     println!("\n## 配合`.enumerate()`提供索引");
     {
-        let mut teams = [
-            [("Jack", 20), ("Jane", 23), ("Jill", 18), ("John", 19)],
-            [("Bill", 17), ("Brenda", 16), ("Brad", 18), ("Barbara", 17)]
-        ];
+        let mut teams = [[("Jack", 20), ("Jane", 23), ("Jill", 18), ("John", 19)],
+                         [("Bill", 17), ("Brenda", 16), ("Brad", 18), ("Barbara", 17)]];
         println!("Before teams = {:?}", teams);
 
         for (index, team) in teams.iter_mut().enumerate() {
@@ -69,18 +63,15 @@ fn main() {
         println!("Before array[0..10] = {:?}", &array[0..10]);
         println!("Before array[30..33] = {:?}", &array[30..33]);
 
-        let array_upper_case = array.iter_mut()
-            .map(|item| {
-                // TODO: 目前还不知道如何程式化转换大写
-                *item = "ABC";
-                item
-            })
-            .collect::<Vec<_>>();
+        let array_upper_case =
+            array.iter_mut().map(|item| item.to_string().to_uppercase()).collect::<Vec<_>>();
 
         // mutable borrow occurs at `array.iter_mut()`
         // println!("After array[0..10] = {:?}", &array[0..10]);
-        println!("After array_upper_case[0..10] = {:?}", &array_upper_case[0..10]);
-        println!("After array_upper_case[30..33] = {:?}", &array_upper_case[30..33]);
+        println!("After array_upper_case[0..10] = {:?}",
+                 &array_upper_case[0..10]);
+        println!("After array_upper_case[30..33] = {:?}",
+                 &array_upper_case[30..33]);
     }
 
     println!("\n## 使用`for-in`和 `.iter_mut()` 遍历迭代器");
@@ -90,8 +81,7 @@ fn main() {
         println!("Before array[30..33] = {:?}", &array[30..33]);
 
         for item in array.iter_mut() {
-            // TODO: 目前还不知道如何程式化转换大写
-            *item = "ABC"
+            // *item = &item.to_string().to_uppercase()
         }
 
         println!("After array[0..10] = {:?}", &array[0..10]);

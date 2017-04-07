@@ -5,24 +5,32 @@ authors = ["shangfeiSF <tony20100125@126.com>"]
 
 [[example]]
 name = "0"
-path = "examples/0.iter.rs"
+path = "examples/0.params_of_closure.rs"
 
 [[example]]
 name = "1"
-path = "examples/1.iter_mut.rs"
+path = "examples/1.iter.rs"
 
 [[example]]
 name = "2"
-path = "examples/2.into_iter.rs"
+path = "examples/2.iter_mut.rs"
 
 [[example]]
 name = "3"
-path = "examples/3.for_loop.rs"
+path = "examples/3.iter_mut_more.rs"
 
 [[example]]
 name = "4"
-path = "examples/4.clone_into_iter.rs"
+path = "examples/4.into_iter.rs"
 
 [[example]]
 name = "5"
-path = "examples/5.cloned_take.rs"
+path = "examples/5.for_loop.rs"
+
+[[example]]
+name = "6"
+path = "examples/6.clone_into_iter.rs"
+
+[[example]]
+name = "7"
+path = "examples/7.cloned_take.rs"
